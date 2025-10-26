@@ -1,152 +1,267 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>World Travel Quiz</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Where in the World? — 15 Question Quiz</title>
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background: #f7f9fc;
-      color: #222;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg:#f6f7fb; --card:#fff; --accent:#1f7aec; --muted:#6b7280;
+      --accent-dark:#0f62c9;
     }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; margin:0; background:var(--bg); color:#0f172a; -webkit-font-smoothing:antialiased}
+    .wrap{max-width:980px;margin:22px auto;padding:18px}
+    .card{background:var(--card);border-radius:14px;box-shadow:0 10px 30px rgba(16,24,40,0.08);overflow:hidden}
+    header{display:flex;align-items:center;gap:12px;padding:16px 18px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6aa8ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+    .title{flex:1}
+    .title h1{margin:0;font-size:18px}
+    .title p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .quiz-body{display:grid;grid-template-columns:1fr;gap:16px;padding:18px}
+    .question-area{display:flex;flex-direction:column;gap:12px}
+    .image-wrap{width:100%;max-height:420px;overflow:hidden;border-radius:12px;background:#eceff6;display:flex;align-items:center;justify-content:center}
+    .image-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .question{font-weight:700;font-size:18px;margin-top:6px}
+    .choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+    .choice{border:1px solid #eef4ff;padding:12px;border-radius:10px;background:#fff;cursor:pointer;user-select:none;text-align:left}
+    .choice.selected{border-color:var(--accent);box-shadow:0 6px 18px rgba(31,122,236,0.12);background:linear-gradient(180deg,#fff,#f3f8ff)}
+    .controls{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-top:1px solid #f3f6fb}
+    .btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(31,122,236,0.12)}
+    .progress{height:8px;background:#e9f0ff;border-radius:999px;overflow:hidden;margin-top:8px}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#6aa8ff);width:0}
+    aside{padding:18px;display:flex;flex-direction:column;gap:12px;max-height:520px;overflow:auto}
+    .hint{background:#fbfbff;padding:12px;border-radius:10px}
+    footer{padding:14px 18px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .results-wrap{padding:28px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+    /* animated gradient background for results */
+    .results-card{
+      width:100%;border-radius:12px;padding:22px;color:white;text-align:center;
+      background:linear-gradient(135deg,#00c6ff 0%,#0072ff 50%, #5a00ff 100%);
+      box-shadow:0 12px 30px rgba(10,30,80,0.18);
+      transform-origin:center;
     }
-    img {
-      width: 100%;
-      height: 400px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-    h2 {
-      font-size: 1.3rem;
-      margin-bottom: 16px;
-    }
-    button {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      background: #fff;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    button:hover {
-      background: #f0f0f0;
-    }
-    button.selected {
-      background: #007bff;
-      color: #fff;
-      border-color: #007bff;
-    }
-    .nav-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-    .nav-buttons button {
-      width: 48%;
-      background: #007bff;
-      color: white;
-    }
-    .result {
-      text-align: center;
-      margin-top: 30px;
-    }
+    .tier{font-size:18px;font-weight:800;margin:6px 0}
+    .restart{margin-top:12px;background:rgba(255,255,255,0.12);border:none;padding:10px 14px;border-radius:10px;color:white;cursor:pointer}
+    .share{background:rgba(255,255,255,0.18);border:none;padding:8px 12px;border-radius:8px;color:white;cursor:pointer}
+    @media (min-width:860px){ .quiz-body{grid-template-columns:1fr 340px} .image-wrap{min-height:320px} .choices{grid-column:1/-1} }
+    @media (max-width:520px){ .choices{grid-template-columns:1fr} .image-wrap{max-height:260px} }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="quiz">
-      <h2>Loading quiz...</h2>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Where in the World? quiz">
+      <header>
+        <div class="logo">W🌍</div>
+        <div class="title">
+          <h1>Where in the World?</h1>
+          <p>15 postcard-style geography questions — stable images.</p>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;color:var(--muted)">15 questions</div>
+          <div style="font-size:12px;color:var(--muted)">Embed-ready • No sign-in</div>
+        </div>
+      </header>
+
+      <main class="quiz-body">
+        <section class="question-area" aria-live="polite">
+          <div class="image-wrap" id="imageWrap">
+            <img id="qImage" alt="Question image" src="">
+          </div>
+
+          <div class="question" id="qText">Loading…</div>
+          <div class="choices" id="choices" role="list"></div>
+
+          <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+          <div class="controls">
+            <div style="display:flex;gap:10px;align-items:center">
+              <button class="btn ghost" id="prevBtn" aria-label="Previous">◀ Prev</button>
+              <button class="btn ghost" id="nextBtn" aria-label="Next">Next ▶</button>
+            </div>
+            <div style="font-size:13px;color:var(--muted)">Tip: Use ← → to navigate, 1–4 to pick answers</div>
+          </div>
+
+          <div class="results-wrap" id="results" aria-hidden="true">
+            <div class="results-card" id="resultsCard" role="region" aria-label="Quiz results">
+              <div id="resultsTitle" style="font-size:20px;font-weight:800">You scored X / 15</div>
+              <div id="resultsTier" class="tier">Tier</div>
+              <div id="resultsText" style="opacity:0.95"></div>
+              <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+                <button class="restart" id="retryBtn">Restart Quiz</button>
+                <button class="share" id="shareBtn">Copy share text</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside>
+          <div class="hint">
+            <strong>How it works</strong>
+            <div style="color:var(--muted);font-size:13px">Pick the country that matches the image. Move forward with Next. Results include fun travel tiers.</div>
+          </div>
+          <div style="background:#fff;padding:12px;border-radius:10px;border:1px solid #f1f5f9">
+            <strong>Stable images</strong>
+            <div style="color:var(--muted);font-size:13px">Images use direct Unsplash CDN links (medium size) to avoid unpredictable results.</div>
+          </div>
+          <div style="background:#fff;padding:12px;border-radius:10px;border:1px solid #f1f5f9">
+            <strong>Embed</strong>
+            <div style="color:var(--muted);font-size:13px">Embed with &lt;iframe src=&quot;https://redbee7x-star.github.io/world-quiz/&quot;&gt; or your repo URL. Use width=100% and height around 800.</div>
+          </div>
+        </aside>
+      </main>
+
+      <footer>
+        <div style="color:var(--muted)">Made with care — postcard quiz</div>
+        <div style="color:var(--muted)">Images: Unsplash (CDN)</div>
+      </footer>
     </div>
   </div>
 
   <script>
-  const QUESTIONS = [
-    { q: 'Which country is home to this landmark (Eiffel Tower)?', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80', choices: ['United Kingdom','France','Italy','Germany'], a: 1 },
-    { q: 'Which country is shown in this tropical postcard (Christ the Redeemer)?', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80', choices: ['Argentina','Brazil','Portugal','Spain'], a: 1 },
-    { q: 'Where would you find this castle and cherry blossoms?', image: 'https://images.unsplash.com/photo-1505066836043-7bb2d29f79b1?auto=format&fit=crop&w=800&q=80', choices: ['South Korea','China','Japan','Thailand'], a: 2 },
-    { q: 'This ancient pyramid is located in which country?', image: 'https://images.unsplash.com/photo-1536305030016-4e3c953d8d83?auto=format&fit=crop&w=800&q=80', choices: ['Peru','Mexico','Egypt','Sudan'], a: 2 },
-    { q: 'Where is this coastal opera house located?', image: 'https://images.unsplash.com/photo-1518684079-5f5a44b9d7f5?auto=format&fit=crop&w=800&q=80', choices: ['New Zealand','Australia','USA','Canada'], a: 1 },
-    { q: 'This yellow taxi and skyline hint at which country?', image: 'https://images.unsplash.com/photo-1496180727794-817822f65950?auto=format&fit=crop&w=800&q=80', choices: ['United States','United Kingdom','Australia','Ireland'], a: 0 },
-    { q: 'This colosseum-like ruin belongs to which country?', image: 'https://images.unsplash.com/photo-1568572933382-74d440642117?auto=format&fit=crop&w=800&q=80', choices: ['Greece','Turkey','Italy','Spain'], a: 2 },
-    { q: 'Where would you find this iconic Taj Mahal?', image: 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=800&q=80', choices: ['India','Pakistan','Bangladesh','Nepal'], a: 0 },
-    { q: 'This onion-domed cathedral can be found in which country?', image: 'https://images.unsplash.com/photo-1556792189-3bdbfabf8e95?auto=format&fit=crop&w=800&q=80', choices: ['Russia','Ukraine','Poland','Belarus'], a: 0 },
-    { q: 'Table Mountain overlooks which country?', image: 'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?auto=format&fit=crop&w=800&q=80', choices: ['South Africa','Australia','Chile','Argentina'], a: 0 },
-    { q: 'Where would you find these vibrant Dia de los Muertos colors?', image: 'https://images.unsplash.com/photo-1571772996211-2f02c9727629?auto=format&fit=crop&w=800&q=80', choices: ['Colombia','Mexico','Peru','Guatemala'], a: 1 },
-    { q: 'This wide-open tundra, lakes, and maple vibes point to which country?', image: 'https://images.unsplash.com/photo-1508614999368-9260051291ea?auto=format&fit=crop&w=800&q=80', choices: ['United States','Canada','Norway','Finland'], a: 1 },
-    { q: 'Where is the Great Wall located?', image: 'https://images.unsplash.com/photo-1563890193051-5d6f9e7beebd?auto=format&fit=crop&w=800&q=80', choices: ['China','Japan','Mongolia','Vietnam'], a: 0 },
-    { q: 'This historic Hagia Sophia sits in which country?', image: 'https://images.unsplash.com/photo-1553835973-dec43bfddbeb?auto=format&fit=crop&w=800&q=80', choices: ['Greece','Turkey','Bulgaria','Cyprus'], a: 1 },
-    { q: 'Which country is famous for flamenco and these tiled streets?', image: 'https://images.unsplash.com/photo-1601307141180-1a4a63e8f30f?auto=format&fit=crop&w=800&q=80', choices: ['Portugal','Spain','Italy','Morocco'], a: 1 }
-  ];
+    // Stable Unsplash CDN links (~800px)
+    const QUESTIONS = [
+      { q: 'Which country is home to this landmark (Eiffel Tower)?', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80', choices: ['United Kingdom','France','Italy','Germany'], a: 1 },
+      { q: 'Which country is shown in this tropical postcard (Christ the Redeemer)?', image: 'https://images.unsplash.com/photo-1526481280698-24c1c9b4d0d4?auto=format&fit=crop&w=800&q=80', choices: ['Argentina','Brazil','Portugal','Spain'], a: 1 },
+      { q: 'Where would you find this castle and cherry blossoms?', image: 'https://images.unsplash.com/photo-1505066836043-7bb2d29f79b1?auto=format&fit=crop&w=800&q=80', choices: ['South Korea','China','Japan','Thailand'], a: 2 },
+      { q: 'This ancient pyramid is located in which country?', image: 'https://images.unsplash.com/photo-1536305030016-4e3c953d8d83?auto=format&fit=crop&w=800&q=80', choices: ['Peru','Mexico','Egypt','Sudan'], a: 2 },
+      { q: 'Where is this coastal opera house located?', image: 'https://images.unsplash.com/photo-1518684079-5f5a44b9d7f5?auto=format&fit=crop&w=800&q=80', choices: ['New Zealand','Australia','USA','Canada'], a: 1 },
+      { q: 'This yellow taxi and skyline hint at which country?', image: 'https://images.unsplash.com/photo-1496180727794-817822f65950?auto=format&fit=crop&w=800&q=80', choices: ['United States','United Kingdom','Australia','Ireland'], a: 0 },
+      { q: 'This colosseum-like ruin belongs to which country?', image: 'https://images.unsplash.com/photo-1568572933382-74d440642117?auto=format&fit=crop&w=800&q=80', choices: ['Greece','Turkey','Italy','Spain'], a: 2 },
+      { q: 'Where would you find this iconic Taj Mahal?', image: 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=800&q=80', choices: ['India','Pakistan','Bangladesh','Nepal'], a: 0 },
+      { q: 'This onion-domed cathedral can be found in which country?', image: 'https://images.unsplash.com/photo-1556792189-3bdbfabf8e95?auto=format&fit=crop&w=800&q=80', choices: ['Russia','Ukraine','Poland','Belarus'], a: 0 },
+      { q: 'Table Mountain overlooks which country?', image: 'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?auto=format&fit=crop&w=800&q=80', choices: ['South Africa','Australia','Chile','Argentina'], a: 0 },
+      { q: 'Where would you find these vibrant Dia de los Muertos colors?', image: 'https://images.unsplash.com/photo-1571772996211-2f02c9727629?auto=format&fit=crop&w=800&q=80', choices: ['Colombia','Mexico','Peru','Guatemala'], a: 1 },
+      { q: 'This wide-open tundra, lakes, and maple vibes point to which country?', image: 'https://images.unsplash.com/photo-1508614999368-9260051291ea?auto=format&fit=crop&w=800&q=80', choices: ['United States','Canada','Norway','Finland'], a: 1 },
+      { q: 'Where is the Great Wall located?', image: 'https://images.unsplash.com/photo-1563890193051-5d6f9e7beebd?auto=format&fit=crop&w=800&q=80', choices: ['China','Japan','Mongolia','Vietnam'], a: 0 },
+      { q: 'This historic Hagia Sophia sits in which country?', image: 'https://images.unsplash.com/photo-1553835973-dec43bfddbeb?auto=format&fit=crop&w=800&q=80', choices: ['Greece','Turkey','Bulgaria','Cyprus'], a: 1 },
+      { q: 'Which country is famous for flamenco and these tiled streets?', image: 'https://images.unsplash.com/photo-1601307141180-1a4a63e8f30f?auto=format&fit=crop&w=800&q=80', choices: ['Portugal','Spain','Italy','Morocco'], a: 1 }
+    ];
 
-  let current = 0;
-  let score = 0;
-  const answers = new Array(QUESTIONS.length).fill(null);
+    let index = 0;
+    const answers = Array(QUESTIONS.length).fill(null);
 
-  function renderQuestion() {
-    const q = QUESTIONS[current];
-    document.getElementById('quiz').innerHTML = `
-      <img src="${q.image}" alt="Question image">
-      <h2>${current + 1}. ${q.q}</h2>
-      ${q.choices.map((c, i) => `
-        <button class="${answers[current] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">${c}</button>
-      `).join('')}
-      <div class="nav-buttons">
-        <button onclick="prevQuestion()" ${current === 0 ? 'disabled' : ''}>◀ Prev</button>
-        <button onclick="nextQuestion()">${current === QUESTIONS.length - 1 ? 'Finish' : 'Next ▶'}</button>
-      </div>
-    `;
-  }
+    // DOM
+    const qText = document.getElementById('qText');
+    const qImage = document.getElementById('qImage');
+    const choicesWrap = document.getElementById('choices');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+    const resultsEl = document.getElementById('results');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsTier = document.getElementById('resultsTier');
+    const resultsText = document.getElementById('resultsText');
+    const retryBtn = document.getElementById('retryBtn');
+    const shareBtn = document.getElementById('shareBtn');
 
-  function selectAnswer(i) {
-    answers[current] = i;
-    renderQuestion();
-  }
+    function render() {
+      const item = QUESTIONS[index];
+      qText.textContent = (index+1) + ". " + item.q;
+      qImage.src = item.image;
+      qImage.alt = item.q;
 
-  function nextQuestion() {
-    if (current < QUESTIONS.length - 1) current++;
-    else finishQuiz();
-    renderQuestion();
-  }
+      choicesWrap.innerHTML = '';
+      item.choices.forEach((c, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.type = 'button';
+        btn.innerHTML = c;
+        btn.addEventListener('click', () => select(i));
+        if (answers[index] === i) btn.classList.add('selected');
+        choicesWrap.appendChild(btn);
+      });
 
-  function prevQuestion() {
-    if (current > 0) current--;
-    renderQuestion();
-  }
+      prevBtn.disabled = index === 0;
+      nextBtn.textContent = index === QUESTIONS.length - 1 ? 'Finish' : 'Next ▶';
 
-  function finishQuiz() {
-    score = answers.reduce((acc, a, i) => acc + (a === QUESTIONS[i].a ? 1 : 0), 0);
-    document.getElementById('quiz').innerHTML = `
-      <div class="result">
-        <h2>You scored ${score} of ${QUESTIONS.length} — ${getResultLabel(score)}</h2>
-        <p><strong>You got ${score} / ${QUESTIONS.length}</strong></p>
-      </div>
-    `;
-  }
+      const pct = Math.round(((index) / QUESTIONS.length) * 100);
+      progressBar.style.width = pct + '%';
 
-  function getResultLabel(score) {
-    if (score >= 13) return "Globe Trotter 🌍";
-    if (score >= 9) return "Adventurer ✈️";
-    if (score >= 5) return "Curious Explorer 🧭";
-    return "Staycationer 🏡";
-  }
+      // hide results until finish
+      resultsEl.style.display = 'none';
+      resultsEl.setAttribute('aria-hidden','true');
+    }
 
-  renderQuestion();
+    function select(choiceIdx) {
+      answers[index] = choiceIdx;
+      Array.from(choicesWrap.children).forEach((c, i) => {
+        c.classList.toggle('selected', i === choiceIdx);
+      });
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (index > 0) { index--; render(); }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (index === QUESTIONS.length - 1) return finish();
+      index++; render();
+    });
+
+    function finish() {
+      let correct = 0;
+      QUESTIONS.forEach((q, i) => { if (answers[i] === q.a) correct++; });
+
+      // tier logic
+      let tier = '';
+      let tierText = '';
+      if (correct === 15) {
+        tier = '🏆 World Explorer Supreme!';
+        tierText = 'Perfect! You know the world like the back of your passport.';
+      } else if (correct >= 10) {
+        tier = '🌍 Globe Trotter';
+        tierText = 'Fantastic! Many stamps in your imaginary passport.';
+      } else if (correct >= 5) {
+        tier = '✈️ Frequent Flyer';
+        tierText = 'Nice — you\'ve got a good travel sense.';
+      } else {
+        tier = '🏝️ Postcard Collector';
+        tierText = 'A charming start — plenty of world left to discover.';
+      }
+
+      resultsTitle.textContent = `You scored ${correct} of ${QUESTIONS.length}`;
+      resultsTier.textContent = tier;
+      resultsText.textContent = tierText;
+
+      resultsEl.style.display = 'flex';
+      resultsEl.setAttribute('aria-hidden','false');
+
+      // fill progress to full
+      progressBar.style.width = '100%';
+
+      // scroll into view (iframe friendly)
+      resultsEl.scrollIntoView({behavior:'smooth'});
+    }
+
+    retryBtn.addEventListener('click', () => {
+      index = 0;
+      answers.fill(null);
+      render();
+    });
+
+    shareBtn.addEventListener('click', () => {
+      const correct = QUESTIONS.reduce((acc, q, i) => acc + (answers[i] === q.a ? 1 : 0), 0);
+      const txt = `I scored ${correct}/${QUESTIONS.length} on the "Where in the World?" quiz! Try it: ${location.href}`;
+      navigator.clipboard?.writeText(txt).then(()=>{
+        shareBtn.textContent = 'Copied!';
+        setTimeout(()=> shareBtn.textContent = 'Copy share text', 1400);
+      }).catch(()=> alert(txt));
+    });
+
+    // keyboard accessibility
+    window.addEventListener('keydown', (e) => {
+      if (e.key >= '1' && e.key <= '4') {
+        const n = parseInt(e.key,10)-1;
+        if (n < choicesWrap.children.length) select(n);
+      }
+      if (e.key === 'ArrowRight') nextBtn.click();
+      if (e.key === 'ArrowLeft') prevBtn.click();
+    });
+
+    // initial render
+    render();
   </script>
 </body>
 </html>
-
