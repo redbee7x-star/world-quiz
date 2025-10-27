@@ -36,8 +36,6 @@
     .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(31,122,236,0.12)}
     .progress{height:10px;background:#e9f0ff;border-radius:999px;overflow:hidden;margin-top:8px}
     .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#6aa8ff);width:0}
-    aside{padding:18px;display:flex;flex-direction:column;gap:12px;max-height:520px;overflow:auto}
-    .hint{background:#fbfbff;padding:12px;border-radius:10px}
     footer{padding:14px 18px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
     .results-wrap{padding:28px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
     .results-card{
@@ -151,7 +149,8 @@
         choicesWrap.appendChild(btn);
       });
 
-      prevBtn.disabled = index === 0;
+      // hide previous button on the first question
+      prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
       nextBtn.textContent = index === QUESTIONS.length - 1 ? 'Finish ▶' : 'Next ▶';
 
       const pct = Math.round(((index) / QUESTIONS.length) * 100);
@@ -170,7 +169,7 @@
         if (index === QUESTIONS.length - 1) return finish();
         index++;
         render();
-      }, 400); // small delay for visual feedback
+      }, 400); // short delay for visual feedback
     }
 
     prevBtn.addEventListener('click', () => {
